@@ -1,9 +1,19 @@
+const c = @cImport({
+    @cInclude("librealsense2/rs.h");
+    @cInclude("librealsense2/h/rs_pipeline.h");
+    @cInclude("librealsense2/h/rs_option.h");
+    @cInclude("librealsense2/h/rs_frame.h");
+});
 const std = @import("std");
 
 pub fn main() !void {
     // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
 
+    var rs_err: ?*c.rs2_error = undefined;
+    var rs_ctx: ?*c.rs2_context = c.rs2_create_context(c.RS2_API_VERSION, &rs_err);
+    _ = rs_ctx;
+    std.debug.print("Realsense2 version {}\n", .{c.RS2_API_VERSION});
+    // c.rs2_
     // stdout is for the actual output of your application, for example if you
     // are implementing gzip, then only the compressed bytes should be sent to
     // stdout, not any debugging messages.

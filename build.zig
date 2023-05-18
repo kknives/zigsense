@@ -23,6 +23,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // exe.addLibraryPath("/nix/store/yaz7pyf0ah88g2v505l38n0f3wg2vzdj-glibc-2.37-8/");
+    exe.linkLibC();
+    // exe.setLibCFile(std.build.FileSource{ .path = "/nix/store/yaz7pyf0ah88g2v505l38n0f3wg2vzdj-glibc-2.37-8/lib/libc.so.6" });
+    // exe.setLibCFile(std.build.FileSource{ .path = "libc-paths" });
+    exe.addIncludePath("deps/librealsense/include");
+    exe.linkSystemLibrary("realsense2");
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
