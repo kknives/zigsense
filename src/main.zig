@@ -34,7 +34,55 @@ pub fn main() !void {
     const rs_dev_count: ?c_int = c.rs2_get_device_count(rs_dev_list, &rs_err);
     std.debug.print("There are {?} connected Realsenses\n", .{rs_dev_count});
     std.debug.print("Realsense2 version {}\n", .{c.RS2_API_VERSION});
-    // c.rs2_
+
+    const rs_dev: ?*c.rs2_device = c.rs2_create_device(rs_dev_list, 0, &rs_err);
+    defer c.rs2_delete_device(rs_dev);
+    check_error(rs_err);
+    print_device_info(rs_dev);
+    check_error(rs_err);
+
+    const pipeline: ?*c.rs2_pipeline = c.rs2_create_pipeline(rs_ctx, &rs_err);
+    defer c.rs2_delete_pipeline(pipeline);
+    check_error(rs_err);
+
+    const config: ?*c.rs2_config = c.rs2_create_config(&rs_err);
+    defer c.rs2_delete_config(config);
+    check_error(rs_err);
+    // const stream_params = .{ .stream = @as(c.rs2_stream, c.RS2_STREAM_DEPTH), .format = @intCast(c_long, c.RS2_FORMAT_Z16), .width = @intCast(c_long, 640), .height = @intCast(c_long, 0), .fps = 30, .stream_index = 0 };
+    // const stream_params = .{ .stream = c.RS2_STREAM_DEPTH, .format = c.RS2_FORMAT_Z16, .width = 640, .height = 0, .fps = 30, .stream_index = 0 };
+    // _ = stream_params;
+    // c.rs2_config_enable_stream(config, stream_params.stream, stream_params.stream_index, stream_params.width, stream_params.height, stream_params.format, stream_params.fps, &rs_err);
+    c.rs2_config_enable_stream(config, c.RS2_STREAM_DEPTH, 0, 640, 0, c.RS2_FORMAT_Z16, 30, &rs_err);
+    check_error(rs_err);
+
+    _ = c.rs2_pipeline_start_with_config(pipeline, config, &rs_err);
+    if (rs_err) |_| {
+        std.debug.print("This device does not support depth streaming\n", .{});
+        return;
+    }
+    while (true) {
+        const frames: ?*c.rs2_frame = c.rs2_pipeline_wait_for_frames(pipeline, c.RS2_DEFAULT_TIMEOUT, &rs_err);
+        defer c.rs2_release_frame(frames);
+        check_error(rs_err);
+        const frame_len: u32 = @as(u32, c.rs2_embedded_frames_count(frames, &rs_err));
+        check_error(rs_err);
+        var i = 0;
+        while (i <= frame_len) : (i += 1) {
+            const frame: ?*c.rs2_frame = c.rs2_extract_frame(frames, i, &rs_err);
+            defer c.rs2_release_frame(frame);
+            check_error(rs_err);
+            if (0 == c.rs2_is_frame_extendable_to(frame, c.RS2_EXTENSION_DEPTH_FRAME, &rs_err)) continue;
+
+            const width: c_int = c.rs2_get_frame_width(frame, &rs_err);
+            check_error(rs_err);
+            const height: c_int = c.rs2_get_frame_height(frame, &rs_err);
+            check_error(rs_err);
+            const dist_to_center: c_longdouble = c.rs2_depth_frame_get_distance(frame, width / 2, height / 2, &rs_err);
+            check_error(rs_err);
+            std.debug.print("The camera is facing an object {.3f} metres away.\n", .{dist_to_center});
+        }
+    }
+
     // stdout is for the actual output of your application, for example if you
     // are implementing gzip, then only the compressed bytes should be sent to
     // stdout, not any debugging messages.
