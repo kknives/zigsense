@@ -23,7 +23,8 @@ fn print_device_info(d: ?*c.rs2_device) void {
     check_error(e);
 }
 
-    var rs_err: ?*c.rs2_error = undefined;
+pub fn main() !void {
+    var rs_err: ?*c.rs2_error = null;
     var rs_ctx: ?*c.rs2_context = c.rs2_create_context(c.RS2_API_VERSION, &rs_err);
     _ = rs_ctx;
     std.debug.print("Realsense2 version {}\n", .{c.RS2_API_VERSION});
