@@ -61,22 +61,22 @@ pub fn main() !void {
         const frames: ?*c.rs2_frame = c.rs2_pipeline_wait_for_frames(pipeline, c.RS2_DEFAULT_TIMEOUT, &rs_err);
         defer c.rs2_release_frame(frames);
         check_error(rs_err);
-        const frame_len: u32 = @as(u32, c.rs2_embedded_frames_count(frames, &rs_err));
+        const frame_len: i32 = @as(i32, c.rs2_embedded_frames_count(frames, &rs_err));
         check_error(rs_err);
-        var i = 0;
-        while (i <= frame_len) : (i += 1) {
+        var i: i32 = 0;
+        inner: while (i <= frame_len) : (i += 1) {
             const frame: ?*c.rs2_frame = c.rs2_extract_frame(frames, i, &rs_err);
             defer c.rs2_release_frame(frame);
             check_error(rs_err);
-            if (0 == c.rs2_is_frame_extendable_to(frame, c.RS2_EXTENSION_DEPTH_FRAME, &rs_err)) continue;
+            if (0 == c.rs2_is_frame_extendable_to(frame, c.RS2_EXTENSION_DEPTH_FRAME, &rs_err)) continue :inner;
 
             const width: c_int = c.rs2_get_frame_width(frame, &rs_err);
             check_error(rs_err);
             const height: c_int = c.rs2_get_frame_height(frame, &rs_err);
             check_error(rs_err);
-            const dist_to_center: c_longdouble = c.rs2_depth_frame_get_distance(frame, width / 2, height / 2, &rs_err);
+            const dist_to_center: f32 = c.rs2_depth_frame_get_distance(frame, @divFloor(width, 2), @divFloor(height, 2), &rs_err);
             check_error(rs_err);
-            std.debug.print("The camera is facing an object {.3f} metres away.\n", .{dist_to_center});
+            std.debug.print("The camera is facing an object {d:.3} metres away.\n", .{dist_to_center});
         }
     }
 
