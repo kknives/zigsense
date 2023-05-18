@@ -26,7 +26,13 @@ fn print_device_info(d: ?*c.rs2_device) void {
 pub fn main() !void {
     var rs_err: ?*c.rs2_error = null;
     var rs_ctx: ?*c.rs2_context = c.rs2_create_context(c.RS2_API_VERSION, &rs_err);
-    _ = rs_ctx;
+    defer c.rs2_delete_context(rs_ctx);
+    check_error(rs_err);
+    const rs_dev_list: ?*c.rs2_device_list = c.rs2_query_devices(rs_ctx, &rs_err);
+    defer c.rs2_delete_device_list(rs_dev_list);
+    check_error(rs_err);
+    const rs_dev_count: ?c_int = c.rs2_get_device_count(rs_dev_list, &rs_err);
+    std.debug.print("There are {?} connected Realsenses\n", .{rs_dev_count});
     std.debug.print("Realsense2 version {}\n", .{c.RS2_API_VERSION});
     // c.rs2_
     // stdout is for the actual output of your application, for example if you
