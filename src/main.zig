@@ -48,11 +48,8 @@ pub fn main() !void {
     const config: ?*c.rs2_config = c.rs2_create_config(&rs_err);
     defer c.rs2_delete_config(config);
     check_error(rs_err);
-    // const stream_params = .{ .stream = @as(c.rs2_stream, c.RS2_STREAM_DEPTH), .format = @intCast(c_long, c.RS2_FORMAT_Z16), .width = @intCast(c_long, 640), .height = @intCast(c_long, 0), .fps = 30, .stream_index = 0 };
-    // const stream_params = .{ .stream = c.RS2_STREAM_DEPTH, .format = c.RS2_FORMAT_Z16, .width = 640, .height = 0, .fps = 30, .stream_index = 0 };
-    // _ = stream_params;
-    // c.rs2_config_enable_stream(config, stream_params.stream, stream_params.stream_index, stream_params.width, stream_params.height, stream_params.format, stream_params.fps, &rs_err);
-    c.rs2_config_enable_stream(config, c.RS2_STREAM_DEPTH, 0, 640, 0, c.RS2_FORMAT_Z16, 30, &rs_err);
+    const stream_params = .{ .stream = c.RS2_STREAM_DEPTH, .format = c.RS2_FORMAT_Z16, .width = 640, .height = 0, .fps = 30, .stream_index = 0 };
+    c.rs2_config_enable_stream(config, stream_params.stream, stream_params.stream_index, stream_params.width, stream_params.height, stream_params.format, stream_params.fps, &rs_err);
     check_error(rs_err);
 
     _ = c.rs2_pipeline_start_with_config(pipeline, config, &rs_err);
