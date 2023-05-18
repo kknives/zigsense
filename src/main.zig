@@ -1,4 +1,5 @@
 const c = @cImport({
+    @cInclude("stdio.h");
     @cInclude("librealsense2/rs.h");
     @cInclude("librealsense2/h/rs_pipeline.h");
     @cInclude("librealsense2/h/rs_option.h");
@@ -6,8 +7,21 @@ const c = @cImport({
 });
 const std = @import("std");
 
-pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
+fn check_error(err: ?*c.rs2_error) void {
+    if (err) |e| {
+        _ = c.printf("rs_error was raised when calling %s(%s):\n", c.rs2_get_failed_function(e), c.rs2_get_failed_args(e));
+        _ = c.printf("%s \n", c.rs2_get_error_message(e));
+    }
+}
+fn print_device_info(d: ?*c.rs2_device) void {
+    var e: ?*c.rs2_error = null;
+    _ = c.printf("\nUsing device 0, an %s\n", c.rs2_get_device_info(d, c.RS2_CAMERA_INFO_NAME, &e));
+    check_error(e);
+    _ = c.printf("Serial Number %s\n", c.rs2_get_device_info(d, c.RS2_CAMERA_INFO_SERIAL_NUMBER, &e));
+    check_error(e);
+    _ = c.printf("Firmware version %s\n\n", c.rs2_get_device_info(d, c.RS2_CAMERA_INFO_FIRMWARE_VERSION, &e));
+    check_error(e);
+}
 
     var rs_err: ?*c.rs2_error = undefined;
     var rs_ctx: ?*c.rs2_context = c.rs2_create_context(c.RS2_API_VERSION, &rs_err);
