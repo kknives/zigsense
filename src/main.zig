@@ -11,6 +11,7 @@ fn check_error(err: ?*c.rs2_error) void {
     if (err) |e| {
         _ = c.printf("rs_error was raised when calling %s(%s):\n", c.rs2_get_failed_function(e), c.rs2_get_failed_args(e));
         _ = c.printf("%s \n", c.rs2_get_error_message(e));
+        std.os.exit(1);
     }
 }
 fn print_device_info(d: ?*c.rs2_device) void {
