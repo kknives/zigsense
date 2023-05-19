@@ -64,10 +64,11 @@ pub fn main() !void {
         const frame_len: i32 = @as(i32, c.rs2_embedded_frames_count(frames, &rs_err));
         check_error(rs_err);
         var i: i32 = 0;
-        inner: while (i <= frame_len) : (i += 1) {
+        inner: while (i < frame_len) : (i += 1) {
             const frame: ?*c.rs2_frame = c.rs2_extract_frame(frames, i, &rs_err);
             defer c.rs2_release_frame(frame);
             check_error(rs_err);
+            if (frame == null) continue :inner;
             if (0 == c.rs2_is_frame_extendable_to(frame, c.RS2_EXTENSION_DEPTH_FRAME, &rs_err)) continue :inner;
 
             const width: c_int = c.rs2_get_frame_width(frame, &rs_err);
